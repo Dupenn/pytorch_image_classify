@@ -19,6 +19,7 @@ from torchvision import datasets, transforms, models
 import os
 from net.simple import simpleconv3
 from tensorboardX import SummaryWriter
+import time
 
 writer = SummaryWriter()
 
@@ -26,6 +27,7 @@ writer = SummaryWriter()
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+        epoch_start = time.time()
         for phase in ['train', 'val']:
             if phase == 'train':
                 scheduler.step()
@@ -65,8 +67,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 writer.add_scalar('data/valloss', epoch_loss, epoch)
                 writer.add_scalar('data/valacc', epoch_acc, epoch)
 
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                phase, epoch_loss, epoch_acc))
+            print('{} Loss: {:.4f} Acc: {:.4f} Cost: {}'.format(phase, epoch_loss, epoch_acc,
+                                                                int(round((time.time() - epoch_start) * 1000))))
 
     writer.export_scalars_to_json("./all_scalars.json")
     writer.close()
@@ -83,7 +85,7 @@ if __name__ == '__main__':
             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
         ]),
         'val': transforms.Compose([
-            transforms.Scale(64),
+            transforms.Resize(64),
             transforms.CenterCrop(48),
             transforms.ToTensor(),
             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
@@ -119,4 +121,4 @@ if __name__ == '__main__':
                            num_epochs=500)
     model_path = 'models'
     os.makedirs(model_path, exist_ok=True)
-    torch.save(modelclc.state_dict(), model_path+'/model.ckpt')
+    torch.save(modelclc.state_dict(), model_path + '/model.ckpt')

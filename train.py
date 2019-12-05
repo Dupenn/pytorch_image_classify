@@ -1,13 +1,5 @@
 # coding:utf8
 
-# Copyright 2019 longpeng2008. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# If you find any problem,please contact us
-#
-#     longpeng2008to2012@gmail.com 
-#
-# or create issues
-# =============================================================================
 from __future__ import print_function, division
 
 import torch
@@ -17,7 +9,6 @@ from torch.optim import lr_scheduler
 from torch.autograd import Variable
 from torchvision import datasets, transforms, models
 import os
-from net.simple import simpleconv3
 from tensorboardX import SummaryWriter
 import time
 
@@ -38,7 +29,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             running_loss = 0.0
             running_corrects = 0.0
 
-            for data in dataloders[phase]:
+            for data in data_loader[phase]:
                 inputs, labels = data
                 if use_gpu:
                     inputs = Variable(inputs.cuda())
@@ -48,14 +39,14 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
                 optimizer.zero_grad()
                 outputs = model(inputs)
-                _, preds = torch.max(outputs.data, 1)
+                _, predicts = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
                 if phase == 'train':
                     loss.backward()
                     optimizer.step()
 
                 running_loss += loss.data.item()
-                running_corrects += torch.sum(preds == labels).item()
+                running_corrects += torch.sum(predicts == labels).item()
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects / dataset_sizes[phase]
@@ -93,32 +84,31 @@ if __name__ == '__main__':
     }
 
     data_dir = './data/'
-    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
-                                              data_transforms[x]) for x in ['train', 'val']}
-    dataloders = {x: torch.utils.data.DataLoader(image_datasets[x],
-                                                 batch_size=16,
-                                                 shuffle=True,
-                                                 num_workers=4) for x in ['train', 'val']}
+    image_dataset = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+                                             data_transforms[x]) for x in ['train', 'val']}
+    data_loader = {x: torch.utils.data.DataLoader(image_dataset[x],
+                                                  batch_size=16,
+                                                  shuffle=True,
+                                                  num_workers=4) for x in ['train', 'val']}
 
-    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+    dataset_sizes = {x: len(image_dataset[x]) for x in ['train', 'val']}
 
     use_gpu = torch.cuda.is_available()
 
-    modelclc = simpleconv3()
-    # modelclc = models.resnet18()
-    # print(modelclc)
+    model_clc = models.resnet18(num_classes=2)
+    # print(model_clc)
     if use_gpu:
-        modelclc = modelclc.cuda()
+        model_clc = model_clc.cuda()
 
     criterion = nn.CrossEntropyLoss()
-    optimizer_ft = optim.SGD(modelclc.parameters(), lr=0.1, momentum=0.9)
+    optimizer_ft = optim.SGD(model_clc.parameters(), lr=0.1, momentum=0.9)
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 
-    modelclc = train_model(model=modelclc,
-                           criterion=criterion,
-                           optimizer=optimizer_ft,
-                           scheduler=exp_lr_scheduler,
-                           num_epochs=500)
+    model_clc = train_model(model=model_clc,
+                            criterion=criterion,
+                            optimizer=optimizer_ft,
+                            scheduler=exp_lr_scheduler,
+                            num_epochs=5)
     model_path = 'models'
     os.makedirs(model_path, exist_ok=True)
-    torch.save(modelclc.state_dict(), model_path + '/model.ckpt')
+    torch.save(model_clc.state_dict(), model_path + '/model.ckpt')

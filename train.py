@@ -83,7 +83,7 @@ if __name__ == '__main__':
         ]),
     }
 
-    data_dir = './data/'
+    data_dir = '/data/tianchi/label/'
     image_dataset = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                              data_transforms[x]) for x in ['train', 'val']}
     data_loader = {x: torch.utils.data.DataLoader(image_dataset[x],
@@ -109,6 +109,6 @@ if __name__ == '__main__':
                             optimizer=optimizer_ft,
                             scheduler=exp_lr_scheduler,
                             num_epochs=5)
-    model_path = 'models'
+    model_path = 'models_tianchi'
     os.makedirs(model_path, exist_ok=True)
     torch.save(model_clc.state_dict(), model_path + '/model.ckpt')

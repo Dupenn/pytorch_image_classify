@@ -108,7 +108,7 @@ if __name__ == '__main__':
                             criterion=criterion,
                             optimizer=optimizer_ft,
                             scheduler=exp_lr_scheduler,
-                            num_epochs=5)
+                            num_epochs=150)
     model_path = 'models_tianchi'
     os.makedirs(model_path, exist_ok=True)
     torch.save(model_clc.state_dict(), model_path + '/model.ckpt')

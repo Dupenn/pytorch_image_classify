@@ -17,9 +17,9 @@ writer = SummaryWriter()
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         epoch_start = time.time()
         for phase in ['train', 'val']:
+            print('Epoch {}/{}'.format(epoch, num_epochs - 1))
             if phase == 'train':
                 scheduler.step()
                 model.train(True)  # Set model to training mode

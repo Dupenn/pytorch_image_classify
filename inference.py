@@ -1,3 +1,5 @@
+# coding:utf8
+
 import torch
 from torch.autograd import Variable
 from torchvision import transforms, models
